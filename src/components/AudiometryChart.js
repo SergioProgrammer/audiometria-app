@@ -19,7 +19,7 @@ const AudiometryChart = ({ data }) => {
     labels: data.labels,
     datasets: [
       {
-        label: 'Oído Derecho',
+        label: 'Right Ear',
         data: data.rightEarValues,
         borderColor: 'rgba(0, 123, 255, 1)', // Color de la línea del oído derecho
         backgroundColor: 'rgba(7, 106, 193, 0.2)', // Color de relleno
@@ -27,7 +27,7 @@ const AudiometryChart = ({ data }) => {
         tension: 0.2, // Reduce la suavidad para un desplazamiento más rápido
       },
       {
-        label: 'Oído Izquierdo',
+        label: 'Left Ear',
         data: data.leftEarValues,
         borderColor: 'rgb(99, 255, 250)', // Color de la línea del oído izquierdo
         backgroundColor: 'rgba(31, 191, 209, 0.2)', // Color de relleno
@@ -55,12 +55,12 @@ const AudiometryChart = ({ data }) => {
       x: {
         title: {
           display: true,
-          text: 'Frecuencia (Hz)',
+          text: 'Frequency (Hz)',
         },
       },
     },
     animation: {
-      duration: 100, // Reduce la duración de la animación
+      duration: 10, // Reduce la duración de la animación
       easing: 'easeOutQuad', // Usa una animación más rápida
     },
   };

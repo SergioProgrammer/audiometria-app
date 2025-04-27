@@ -1,61 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 const AudiometryTable = ({ data, onDataChange }) => {
-  // Estado local para manejar los datos de la tabla
-  const [tableData, setTableData] = useState(
-    data.labels.map((label) => ({
-      frequency: label,
-      rightEar: 0,
-      leftEar: 0,
-    }))
-  );
-
-  // Actualiza los datos en el componente padre cuando cambian los datos locales
-  useEffect(() => {
-    const updatedData = {
-      labels: tableData.map((row) => row.frequency),
-      rightEarValues: tableData.map((row) => parseInt(row.rightEar, 10) || 0), // Valores del oído derecho
-      leftEarValues: tableData.map((row) => parseInt(row.leftEar, 10) || 0), // Valores del oído izquierdo
-    };
-    onDataChange(updatedData);
-  }, [tableData, onDataChange]);
-
-  // Manejar cambios en las celdas editables
   const handleInputChange = (index, field, value) => {
-    const updatedTableData = [...tableData];
-    updatedTableData[index][field] = value;
-    setTableData(updatedTableData);
+    const updatedValues = [...data[field]];
+    updatedValues[index] = parseInt(value, 10) || 0;
+
+    const updatedData = {
+      ...data,
+      [field]: updatedValues,
+    };
+
+    onDataChange(updatedData); // Llama a la función pasada como prop
   };
 
   return (
     <table>
       <thead>
         <tr>
-          <th>Frecuencia (Hz)</th>
-          <th>Oído Derecho (dB)</th>
-          <th>Oído Izquierdo (dB)</th>
+          <th>Frequency (Hz)</th>
+          <th>Right Ear (dB)</th>
+          <th>Left Ear (dB)</th>
         </tr>
       </thead>
       <tbody>
-        {tableData.map((row, index) => (
+        {data.labels.map((label, index) => (
           <tr key={index}>
-            <td>{row.frequency}</td>
+            <td>{label}</td>
             <td>
               <input
                 type="number"
-                value={row.rightEar}
-                onChange={(e) =>
-                  handleInputChange(index, 'rightEar', e.target.value)
-                }
+                value={data.rightEarValues[index]}
+                onChange={(e) => handleInputChange(index, 'rightEarValues', e.target.value)}
               />
             </td>
             <td>
               <input
                 type="number"
-                value={row.leftEar}
-                onChange={(e) =>
-                  handleInputChange(index, 'leftEar', e.target.value)
-                }
+                value={data.leftEarValues[index]}
+                onChange={(e) => handleInputChange(index, 'leftEarValues', e.target.value)}
               />
             </td>
           </tr>
