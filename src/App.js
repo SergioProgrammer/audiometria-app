@@ -20,7 +20,7 @@ const App = () => {
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    if (email === "test@example.com" && password === "password") {
+    if (email === "test@example.com" && password === "12345app") {
       setUser({ email, name: "SQ", });
     } else {
       alert("Credenciales incorrectas");
