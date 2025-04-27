@@ -29,39 +29,45 @@ const App = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Formulario enviado"); // Verifica si el formulario está siendo enviado
+    const email = e.target.email.value.trim();
+    const password = e.target.password.value.trim();
   
-    const email = e.target.email.value;
-    const password = e.target.password.value;
+    if (!email || !password) {
+      alert("Por favor, ingresa un correo electrónico y una contraseña.");
+      return;
+    }
   
     try {
-      console.log("Attempting to sign in...");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log("Login successful!", userCredential);
+      const user = userCredential.user;
   
-      const userId = userCredential.user.uid;
+      // Verificar si el correo ha sido verificado
+      if (!user.emailVerified) {
+        alert("Por favor, verifica tu correo electrónico antes de iniciar sesión.");
+        return;
+      }
+  
+      console.log("Usuario autenticado:", user);
+  
+      const userId = user.uid;
       const userDoc = await getDoc(doc(db, "users", userId));
-      
+  
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        console.log("User data retrieved:", userData);
+        console.log("Datos del usuario:", userData);
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
+        console.log("No se encontraron datos de usuario en Firestore.");
         alert("No profile found.");
       }
     } catch (error) {
-      console.error("Login error:", error.message);
-      alert('Error during login: ' + error.message);
-      if (error.code === 'auth/user-not-found') {
-        alert('No user found with this email.');
-      } else if (error.code === 'auth/wrong-password') {
-        alert('Incorrect password. Please try again.');
-      } else {
-        alert('An error occurred during login. Please try again later.');
-      }
+      console.error("Error durante el inicio de sesión:", error.message);
+      alert("Error: " + error.message);
     }
   };
+  
+  
   
   
 
@@ -81,36 +87,45 @@ const App = () => {
     const email = e.target.email.value;
     const password = e.target.password.value;
     const subscription = e.target.subscription.value;
-
+  
     try {
-      // Intentamos crear un nuevo usuario con el correo y la contraseña
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // Guardamos el usuario en el estado y en localStorage
-      const newUser = {
-        email: user.email,
+  
+      // Enviar correo de verificación
+      await user.sendEmailVerification();
+  
+      console.log("Usuario registrado:", user);
+  
+      // Guardar el usuario en Firestore
+      const userData = {
         name,
+        email: user.email,
         subscription,
+        uid: user.uid,
       };
-
-      // Guardamos la información del usuario en Firestore
-      await setDoc(doc(db, "users", user.uid), newUser);
-
-      // Actualizamos el estado y localStorage
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
+  
+      await setDoc(doc(db, "users", user.uid), userData);
+      console.log("Datos del usuario guardados en Firestore:", userData);
+  
+      // Guardar el usuario en el estado y en localStorage
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+  
       setIsRegisterModalOpen(false);
+      alert("Verifica tu correo electrónico antes de iniciar sesión.");
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
-        alert('This email is already registered. Please use a different email.');
+        alert('Este correo ya está registrado. Usa otro correo.');
       } else {
-        console.error("Registration error:", error);
-        alert('An error occurred while registering. Please try again.');
+        console.error("Error en el registro:", error);
+        alert('Hubo un error al registrarse. Intenta nuevamente.');
       }
     }
   };
-
+  
+  
+  
   return (
     <Router>
       <Routes>
