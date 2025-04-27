@@ -1,37 +1,33 @@
 import React, { useState } from 'react';
-import AudiometryChart from './components/AudiometryChart';  // Asegúrate de tener este componente
-import AudiometryTable from './components/AudiometryTable';  // Y este también
+import AudiometryChart from './components/AudiometryChart';
+import AudiometryTable from './components/AudiometryTable';
 import './index.css';
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [data, setData] = useState({ labels: [], values: [] });
-  const [selectedTest, setSelectedTest] = useState('test1'); // Mantener el estado de la prueba seleccionada
+  const [data, setData] = useState({
+    labels: ['0Hz', '500Hz', '1000Hz', '2000Hz', '4000Hz'],
+    values: [0, 0, 0, 0, 0], // Inicializa los valores en 0
+  });
 
   const handleLogin = (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    // Aquí simularíamos un login (deberías agregar autenticación real)
     if (email === "test@example.com" && password === "password") {
-      setUser({ email });
+      setUser({ email, name: "John Doe", profilePic: "https://via.placeholder.com/100" });
     } else {
       alert("Credenciales incorrectas");
     }
   };
 
-  const handleDataSubmit = (e) => {
-    e.preventDefault();
-    // Aquí simularíamos un envío de datos de la prueba de audiometría
-    setData({
-      labels: ['0Hz', '500Hz', '1000Hz', '2000Hz', '4000Hz'],
-      values: [20, 40, 60, 80, 100], // Esto sería un ejemplo de pérdida auditiva
-    });
+  const handleRegister = () => {
+    alert("Funcionalidad de registro aún no implementada.");
   };
 
-  const handleTestChange = (e) => {
-    setSelectedTest(e.target.value);
+  const handleDataChange = (updatedData) => {
+    setData(updatedData); // Actualiza los datos del gráfico cuando cambian en la tabla
   };
 
   return (
@@ -57,36 +53,36 @@ const App = () => {
               />
             </div>
             <button type="submit">Entrar</button>
+            <button
+              type="button"
+              className="register-button"
+              onClick={handleRegister}
+            >
+              Registrarse
+            </button>
           </form>
         ) : (
-          <div>
-            <h2>Bienvenido, {user.email}</h2>
-            <form onSubmit={handleDataSubmit}>
-              <button type="submit">Cargar Resultados de Audiometría</button>
-            </form>
-            
-            <div>
-              <h3>Selecciona el tipo de prueba:</h3>
-              <select onChange={handleTestChange} value={selectedTest}>
-                <option value="test1">Prueba 1</option>
-                <option value="test2">Prueba 2</option>
-                <option value="test3">Prueba 3</option>
-                <option value="test4">Prueba 4</option>
-              </select>
+          <div className="dashboard">
+            {/* Box de perfil */}
+            <div className="profile-box">
+              <img src={user.profilePic} alt="Foto de perfil" className="profile-pic" />
+              <h3>{user.name}</h3>
+              <p>{user.email}</p>
+              <button>Configuraciones</button>
+              <button>Control de Suscripción</button>
             </div>
 
-            <div className="chart-container">
-              <h2>Gráfico de Audiometría</h2>
-              <AudiometryChart data={data} />
-            </div>
+            {/* Contenido principal */}
+            <div className="main-content">
+              <div className="chart-container">
+                <h2>Gráfico de Audiometría</h2>
+                <AudiometryChart data={data} />
+              </div>
 
-            {/* Mostrar la tabla correspondiente según el tipo de prueba seleccionada */}
-            <div className="table-container">
-              <h2>Tabla de Resultados de Audiometría</h2>
-              {selectedTest === 'test1' && <AudiometryTable test="test1" />}
-              {selectedTest === 'test2' && <AudiometryTable test="test2" />}
-              {selectedTest === 'test3' && <AudiometryTable test="test3" />}
-              {selectedTest === 'test4' && <AudiometryTable test="test4" />}
+              <div className="table-container">
+                <h2>Tabla de Resultados de Audiometría</h2>
+                <AudiometryTable data={data} onDataChange={handleDataChange} />
+              </div>
             </div>
           </div>
         )}

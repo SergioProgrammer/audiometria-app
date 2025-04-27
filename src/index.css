@@ -12,10 +12,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column; /* Asegura que los elementos se apilen verticalmente */
-  min-height: 100vh; /* Cambiado de height a min-height */
-  margin: 0; /* Corrige el margen */
-  overflow-y: auto; /* Permite desplazamiento vertical */
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  overflow-y: auto;
 }
 
 /* Contenedor principal */
@@ -23,66 +23,139 @@ body {
   max-width: 1200px;
   width: 100%;
   padding: 20px;
-  text-align: center; /* Centra el texto */
+  text-align: center;
 }
 
 /* Formulario de login y contenido de usuario */
 .form-container {
   background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+  padding: 20px; /* Reduce el padding para ajustarse mejor al contenido */
+  border-radius: 12px; /* Bordes redondeados */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Sombra */
+  margin-top: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: auto; /* Ajusta el ancho automáticamente al contenido */
+  max-width: 1200px; /* Limita el ancho máximo */
+  min-width: 300px; /* Asegura un ancho mínimo */
 }
 
-/* Formulario */
 .form-container h2 {
-  font-size: 24px;
-  margin-bottom: 10px;
+  font-size: 32px; /* Tamaño más grande para el título */
+  margin-bottom: 20px;
 }
 
-/* Estilo de los inputs */
-input {
+.form-container input {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
-  border-radius: 5px;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  box-sizing: border-box;
+  font-size: 16px;
 }
 
-/* Botón */
-button {
-  padding: 10px 20px;
+.form-container button {
+  padding: 12px 20px;
+  margin-top: 10px;
   background-color: #0077b6;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
   width: 100%;
 }
 
-button:hover {
+.form-container button:hover {
   background-color: #005f87;
+}
+
+.form-container .register-button {
+  background-color: #00b4d8; /* Color diferente para el botón de registro */
+  margin-top: 10px;
+}
+
+.form-container .register-button:hover {
+  background-color: #0096c7;
+}
+
+/* Estilo del dashboard */
+.dashboard {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap; /* Permite que los elementos se ajusten en pantallas pequeñas */
+}
+
+/* Box de perfil */
+.profile-box {
+  width: 250px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  flex-shrink: 0; /* Evita que el box de perfil se reduzca demasiado */
+}
+
+.profile-pic {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.profile-box h3 {
+  margin: 10px 0;
+  font-size: 36px;
+  color: #333;
+}
+
+.profile-box p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.profile-box button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.profile-box button:hover {
+  background-color: #005f87;
+}
+
+/* Contenido principal */
+.main-content {
+  flex: 1;
+  min-width: 800px; /* Asegura que el contenido principal no sea demasiado pequeño */
 }
 
 /* Estilos para el gráfico */
 .chart-container {
   margin-top: 20px;
-  width: 100%; /* Asegura que el gráfico ocupe todo el ancho disponible */
+  width: 100%; /* Ocupa todo el ancho disponible */
   overflow-x: auto; /* Permite desplazamiento horizontal si es necesario */
 }
 
 .chart-container h2 {
-  font-size: 24px;
+  font-size: 32px;
   margin-bottom: 20px;
 }
 
 /* Estilos para la tabla */
+.table-container {
+  margin-top: 20px;
+  width: 100%; /* Ocupa todo el ancho disponible */
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -102,35 +175,98 @@ th {
   background-color: #f4f4f9;
 }
 
-input[type="number"] {
-  width: 100px;
-  padding: 5px;
-  margin: 5px;
-}
-
-/* Botón para agregar resultados */
+/* Botón */
 button {
-  padding: 5px 10px;
-  background-color: #2a6bba;
+  padding: 10px 20px;
+  background-color: #0077b6;
   color: white;
   border: none;
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
+  width: 100%;
 }
 
 button:hover {
-  background-color: #094ba7;
+  background-color: #005f87;
 }
 
-/* Estilo del encabezado */
-h2, h3 {
-  color: #333;
-  text-align: center;
-}
-
-/* Estilo general de la página */
-body {
+/* Contenedor para el texto y el desplegable */
+.test-selector {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  align-items: center; /* Alinea verticalmente el texto y el desplegable */
+  gap: 10px; /* Espacio entre el texto y el desplegable */
+  margin-top: 20px; /* Espacio superior */
+}
+
+.test-selector h2 {
+  font-size: 26px; /* Ajusta el tamaño del texto */
+  margin: 0; /* Elimina márgenes adicionales */
+}
+
+.test-selector select {
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* Media Queries para dispositivos pequeños */
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column; /* Cambia a diseño vertical en pantallas pequeñas */
+    align-items: center;
+  }
+
+  .profile-box {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    margin-bottom: 20px;
+  }
+
+  .main-content {
+    width: 100%; /* Ocupa todo el ancho disponible */
+  }
+
+  .form-container {
+    width: 90%; /* Ocupa el 90% del ancho de la pantalla */
+  }
+
+  .chart-container, .table-container {
+    width: 100%; /* Asegura que ocupen todo el ancho disponible */
+  }
+
+  .chart-container h2, .table-container h2 {
+    font-size: 20px; /* Reduce el tamaño del texto en pantallas pequeñas */
+  }
+
+  button {
+    font-size: 14px; /* Reduce el tamaño del botón */
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-pic {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-box h3 {
+    font-size: 18px;
+  }
+
+  .profile-box p {
+    font-size: 18px;
+  }
+
+  th, td {
+    font-size: 18px; /* Reduce el tamaño del texto en la tabla */
+  }
+
+  .form-container {
+    padding: 15px; /* Reduce el padding en pantallas pequeñas */
+  }
+
+  .chart-container h2, .table-container h2 {
+    font-size: 18px; /* Reduce el tamaño del texto */
+  }
 }

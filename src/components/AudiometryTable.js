@@ -1,48 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const AudiometryTable = ({ test }) => {
-  // Datos iniciales de la tabla según la prueba seleccionada
-  const getInitialTableData = (test) => {
-    switch (test) {
-      case 'test1':
-        return [
-          { frequency: '0Hz', rightEar: '20 dB', leftEar: '25 dB' },
-          { frequency: '500Hz', rightEar: '30 dB', leftEar: '35 dB' },
-          { frequency: '1000Hz', rightEar: '40 dB', leftEar: '45 dB' },
-          { frequency: '2000Hz', rightEar: '50 dB', leftEar: '55 dB' },
-          { frequency: '4000Hz', rightEar: '60 dB', leftEar: '65 dB' },
-        ];
-      case 'test2':
-        return [
-          { frequency: '0Hz', rightEar: '15 dB', leftEar: '20 dB' },
-          { frequency: '500Hz', rightEar: '25 dB', leftEar: '30 dB' },
-          { frequency: '1000Hz', rightEar: '35 dB', leftEar: '40 dB' },
-          { frequency: '2000Hz', rightEar: '45 dB', leftEar: '50 dB' },
-          { frequency: '4000Hz', rightEar: '55 dB', leftEar: '60 dB' },
-        ];
-      case 'test3':
-        return [
-          { frequency: '0Hz', rightEar: '25 dB', leftEar: '30 dB' },
-          { frequency: '500Hz', rightEar: '35 dB', leftEar: '40 dB' },
-          { frequency: '1000Hz', rightEar: '45 dB', leftEar: '50 dB' },
-          { frequency: '2000Hz', rightEar: '55 dB', leftEar: '60 dB' },
-          { frequency: '4000Hz', rightEar: '65 dB', leftEar: '70 dB' },
-        ];
-      case 'test4':
-        return [
-          { frequency: '0Hz', rightEar: '30 dB', leftEar: '35 dB' },
-          { frequency: '500Hz', rightEar: '40 dB', leftEar: '45 dB' },
-          { frequency: '1000Hz', rightEar: '50 dB', leftEar: '55 dB' },
-          { frequency: '2000Hz', rightEar: '60 dB', leftEar: '65 dB' },
-          { frequency: '4000Hz', rightEar: '70 dB', leftEar: '75 dB' },
-        ];
-      default:
-        return [];
-    }
-  };
+const AudiometryTable = ({ data, onDataChange }) => {
+  // Estado local para manejar los datos de la tabla
+  const [tableData, setTableData] = useState(
+    data.labels.map((label) => ({
+      frequency: label,
+      rightEar: 0,
+      leftEar: 0,
+    }))
+  );
 
-  // Estado para manejar los datos de la tabla
-  const [tableData, setTableData] = useState(getInitialTableData(test));
+  // Actualiza los datos en el componente padre cuando cambian los datos locales
+  useEffect(() => {
+    const updatedData = {
+      labels: tableData.map((row) => row.frequency),
+      rightEarValues: tableData.map((row) => parseInt(row.rightEar, 10) || 0), // Valores del oído derecho
+      leftEarValues: tableData.map((row) => parseInt(row.leftEar, 10) || 0), // Valores del oído izquierdo
+    };
+    onDataChange(updatedData);
+  }, [tableData, onDataChange]);
 
   // Manejar cambios en las celdas editables
   const handleInputChange = (index, field, value) => {
@@ -63,18 +39,10 @@ const AudiometryTable = ({ test }) => {
       <tbody>
         {tableData.map((row, index) => (
           <tr key={index}>
+            <td>{row.frequency}</td>
             <td>
               <input
-                type="text"
-                value={row.frequency}
-                onChange={(e) =>
-                  handleInputChange(index, 'frequency', e.target.value)
-                }
-              />
-            </td>
-            <td>
-              <input
-                type="text"
+                type="number"
                 value={row.rightEar}
                 onChange={(e) =>
                   handleInputChange(index, 'rightEar', e.target.value)
@@ -83,7 +51,7 @@ const AudiometryTable = ({ test }) => {
             </td>
             <td>
               <input
-                type="text"
+                type="number"
                 value={row.leftEar}
                 onChange={(e) =>
                   handleInputChange(index, 'leftEar', e.target.value)
