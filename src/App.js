@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import AudiometryChart from './components/AudiometryChart';
 import AudiometryTable from './components/AudiometryTable';
 import SubscriptionControl from './components/SubscriptionControl';
 import Perfil from './components/Perfil';
 import Results from './components/Results';
-import { auth, db } from './firebase';  // 🔥 Importa Firebase
-import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { supabase } from './supabase'; 
 import './index.css';
+
+// Componente de ruta protegida
+const ProtectedRoute = ({ user, children }) => {
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -19,60 +25,61 @@ const App = () => {
   });
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
-  // Leer usuario de localStorage al iniciar
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Al cargar la app, verificamos si hay sesión activa
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+      }
+    };
+  
+    getSession();
+  
+    // Escuchar cambios de sesión en tiempo real
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Cambio en la sesión:', event);
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+  
+    // Limpiar el listener al desmontar el componente
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
+  
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const email = e.target.email.value.trim();
-    const password = e.target.password.value.trim();
-  
-    if (!email || !password) {
-      alert("Por favor, ingresa un correo electrónico y una contraseña.");
-      return;
-    }
+    const email = e.target.email.value;
+    const password = e.target.password.value;
   
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
   
-      // Verificar si el correo ha sido verificado
-      if (!user.emailVerified) {
-        alert("Por favor, verifica tu correo electrónico antes de iniciar sesión.");
-        return;
-      }
-  
-      console.log("Usuario autenticado:", user);
-  
-      const userId = user.uid;
-      const userDoc = await getDoc(doc(db, "users", userId));
-  
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        console.log("Datos del usuario:", userData);
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+      if (error) {
+        console.error('Error de inicio de sesión:', error.message);
+        alert('Error: ' + error.message);
       } else {
-        console.log("No se encontraron datos de usuario en Firestore.");
-        alert("No profile found.");
+        console.log('Usuario logueado:', data);
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
       }
     } catch (error) {
-      console.error("Error durante el inicio de sesión:", error.message);
-      alert("Error: " + error.message);
+      console.error('Error inesperado:', error);
+      alert('Hubo un error inesperado.');
     }
   };
-  
-  
-  
-  
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem('user');
   };
@@ -87,45 +94,33 @@ const App = () => {
     const email = e.target.email.value;
     const password = e.target.password.value;
     const subscription = e.target.subscription.value;
-  
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-  
-      // Enviar correo de verificación
-      await user.sendEmailVerification();
-  
-      console.log("Usuario registrado:", user);
-  
-      // Guardar el usuario en Firestore
-      const userData = {
-        name,
-        email: user.email,
-        subscription,
-        uid: user.uid,
-      };
-  
-      await setDoc(doc(db, "users", user.uid), userData);
-      console.log("Datos del usuario guardados en Firestore:", userData);
-  
-      // Guardar el usuario en el estado y en localStorage
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-  
-      setIsRegisterModalOpen(false);
-      alert("Verifica tu correo electrónico antes de iniciar sesión.");
-    } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        alert('Este correo ya está registrado. Usa otro correo.');
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            subscription,
+          },
+        },
+      });
+
+      if (error) {
+        console.error('Error en el registro:', error.message);
+        alert('Hubo un error en el registro: ' + error.message);
       } else {
-        console.error("Error en el registro:", error);
-        alert('Hubo un error al registrarse. Intenta nuevamente.');
+        console.log('Usuario registrado:', data);
+        alert('Te hemos enviado un correo para verificar tu email. Revisa tu bandeja de entrada.');
+        setIsRegisterModalOpen(false);
       }
+    } catch (error) {
+      console.error('Error inesperado:', error);
+      alert('Hubo un error inesperado.');
     }
   };
-  
-  
-  
+
   return (
     <Router>
       <Routes>
@@ -195,9 +190,32 @@ const App = () => {
             </div>
           }
         />
-        <Route path="/subscriptions" element={<SubscriptionControl />} />
-        <Route path="/perfil" element={<Perfil />} />
-        <Route path="/results" element={<Results data={data} />} />
+
+        {/* Rutas protegidas */}
+        <Route
+          path="/subscriptions"
+          element={
+            <ProtectedRoute user={user}>
+              <SubscriptionControl />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute user={user}>
+              <Perfil />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/results"
+          element={
+            <ProtectedRoute user={user}>
+              <Results data={data} />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
@@ -213,9 +231,9 @@ const Dashboard = ({ user, data, setData, onLogout }) => {
   return (
     <div className="dashboard">
       <div className="profile-box">
-        <h3>{user.name}</h3>
+        <h3>{user.user_metadata?.name || "No Name"}</h3>
         <p>{user.email}</p>
-        {user.subscription && <p>Subscription: {user.subscription}€/month</p>}
+        {user.user_metadata?.subscription && <p>Subscription: {user.user_metadata.subscription}€/month</p>}
         <button onClick={() => navigate('/subscriptions')}>Subscription Settings</button>
         <button onClick={() => navigate('/perfil')}>Profile Control</button>
         <button onClick={() => navigate('/results')}>Results</button>
