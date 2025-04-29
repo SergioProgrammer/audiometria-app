@@ -10,7 +10,7 @@ const AudiometryTable = ({ data, onDataChange }) => {
       [field]: updatedValues,
     };
 
-    onDataChange(updatedData); // Llama a la función pasada como prop
+    onDataChange(updatedData); 
   };
 
   return (

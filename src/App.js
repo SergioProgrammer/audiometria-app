@@ -6,6 +6,10 @@ import SubscriptionControl from './components/SubscriptionControl';
 import Perfil from './components/Perfil';
 import Results from './components/Results';
 import { supabase } from './supabase'; 
+import History from './components/History';  
+import AddPatient from './components/AddPatient';
+import SearchPatient from './components/SearchPatient';
+import PatientProfile from './components/PatientProfile';
 import './index.css';
 
 // Componente de ruta protegida
@@ -124,102 +128,134 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <div className="container">
-              <div className="form-container">
-                {!user ? (
-                  <>
-                    <form onSubmit={handleLogin}>
-                      <h2>Login</h2>
+  <Route
+    path="/"
+    element={
+      <div className="container">
+        <div className="form-container">
+          {!user ? (
+            <>
+              <form onSubmit={handleLogin}>
+                <h2>Login</h2>
+                <div>
+                  <input name="email" type="email" placeholder="Email" required />
+                </div>
+                <div>
+                  <input name="password" type="password" placeholder="Password" required />
+                </div>
+                <button type="submit">Enter</button>
+                <button type="button" className="register-button" onClick={handleRegisterOpen}>
+                  Register
+                </button>
+              </form>
+
+              {isRegisterModalOpen && (
+                <div className="modal-overlay">
+                  <div className="modal-content">
+                    <h2>Register</h2>
+                    <form onSubmit={handleRegisterSubmit}>
+                      <input name="name" type="text" placeholder="Full Name" required />
+                      <input name="email" type="email" placeholder="Email Address" required />
+                      <input name="password" type="password" placeholder="Password" required />
+
+                      <h3>Choose a subscription:</h3>
                       <div>
-                        <input name="email" type="email" placeholder="Email" required />
+                        <label>
+                          <input type="radio" name="subscription" value="50" required />
+                          Basic Plan - 50€/month
+                        </label>
                       </div>
                       <div>
-                        <input name="password" type="password" placeholder="Password" required />
+                        <label>
+                          <input type="radio" name="subscription" value="120" />
+                          Pro Plan - 120€/month
+                        </label>
                       </div>
-                      <button type="submit">Enter</button>
-                      <button type="button" className="register-button" onClick={handleRegisterOpen}>
-                        Register
+                      <div>
+                        <label>
+                          <input type="radio" name="subscription" value="200" />
+                          Premium Plan - 200€/month
+                        </label>
+                      </div>
+
+                      <button type="submit">Register</button>
+                      <button type="button" onClick={() => setIsRegisterModalOpen(false)}>
+                        Close
                       </button>
                     </form>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <Dashboard user={user} data={data} setData={setData} onLogout={handleLogout} />
+          )}
+        </div>
+      </div>
+    }
+  />
 
-                    {isRegisterModalOpen && (
-                      <div className="modal-overlay">
-                        <div className="modal-content">
-                          <h2>Register</h2>
-                          <form onSubmit={handleRegisterSubmit}>
-                            <input name="name" type="text" placeholder="Full Name" required />
-                            <input name="email" type="email" placeholder="Email Address" required />
-                            <input name="password" type="password" placeholder="Password" required />
+  <Route
+    path="/subscriptions"
+    element={
+      <ProtectedRoute user={user}>
+        <SubscriptionControl />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/perfil"
+    element={
+      <ProtectedRoute user={user}>
+        <Perfil />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/history"
+    element={
+      <ProtectedRoute user={user}>
+        <History user={user} />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/results"
+    element={
+      <ProtectedRoute user={user}>
+        <Results data={data} />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/add-patient"
+    element={
+      <ProtectedRoute user={user}>
+        <AddPatient user={user} />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/search-patient"
+    element={
+      <ProtectedRoute user={user}>
+        <SearchPatient user={user} />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/patient-profile/:patientId"
+    element={
+      <ProtectedRoute user={user}>
+        <PatientProfile />
+      </ProtectedRoute>
+    }
+  />
+</Routes>
 
-                            <h3>Choose a subscription:</h3>
-                            <div>
-                              <label>
-                                <input type="radio" name="subscription" value="50" required />
-                                Basic Plan - 50€/month
-                              </label>
-                            </div>
-                            <div>
-                              <label>
-                                <input type="radio" name="subscription" value="120" />
-                                Pro Plan - 120€/month
-                              </label>
-                            </div>
-                            <div>
-                              <label>
-                                <input type="radio" name="subscription" value="200" />
-                                Premium Plan - 200€/month
-                              </label>
-                            </div>
-
-                            <button type="submit">Register</button>
-                            <button type="button" onClick={() => setIsRegisterModalOpen(false)}>
-                              Close
-                            </button>
-                          </form>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <Dashboard user={user} data={data} setData={setData} onLogout={handleLogout} />
-                )}
-              </div>
-            </div>
-          }
-        />
-
-        {/* Rutas protegidas */}
-        <Route
-          path="/subscriptions"
-          element={
-            <ProtectedRoute user={user}>
-              <SubscriptionControl />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/perfil"
-          element={
-            <ProtectedRoute user={user}>
-              <Perfil />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/results"
-          element={
-            <ProtectedRoute user={user}>
-              <Results data={data} />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
-  );
-};
+          </Router>
+        );
+      };
 
 const Dashboard = ({ user, data, setData, onLogout }) => {
   const navigate = useNavigate();
@@ -237,6 +273,9 @@ const Dashboard = ({ user, data, setData, onLogout }) => {
         <button onClick={() => navigate('/subscriptions')}>Subscription Settings</button>
         <button onClick={() => navigate('/perfil')}>Profile Control</button>
         <button onClick={() => navigate('/results')}>Results</button>
+        <button onClick={() => navigate('/history')}>History</button>  
+        <button onClick={() => navigate('/add-patient')}>Add New Patient</button>
+        <button onClick={() => navigate('/search-patient')}>Search Patients</button>
         <button onClick={onLogout}>Logout</button>
       </div>
       <div className="main-content">
