@@ -1,105 +1,133 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase'; // Asegúrate de que la ruta sea correcta
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '../supabase';
 
-const Results = ({ data = { rightEarValues: [], leftEarValues: [] } }) => {
+const Results = ({ data = { rightEarValues: [], leftEarValues: [], labels: [] } }) => {
   const navigate = useNavigate();
-  const [diagnosis, setDiagnosis] = useState('');
+  const location = useLocation();
 
-  const generateDiagnosis = async () => {
-    if (!data.rightEarValues.length || !data.leftEarValues.length) {
+  const [diagnosis, setDiagnosis] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [selectedPatient] = useState(location.state?.patient || null);
+
+  useEffect(() => {
+    if (!selectedPatient && location.state?.fromResults) {
+      alert('Please select a patient first.');
+      navigate('/search-patient');
+    }
+  }, [selectedPatient, location.state, navigate]);
+
+  const generateDiagnosis = () => {
+    const { rightEarValues, leftEarValues } = data;
+
+    if (!rightEarValues?.length || !leftEarValues?.length) {
       setDiagnosis('No data available to generate a diagnosis.');
       return;
     }
 
-    const averageRightEar = data.rightEarValues.reduce((a, b) => a + b, 0) / data.rightEarValues.length;
-    const averageLeftEar = data.leftEarValues.reduce((a, b) => a + b, 0) / data.leftEarValues.length;
+    const average = (arr) =>
+      arr.reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0) / arr.length;
+
+    const avgRight = average(rightEarValues);
+    const avgLeft = average(leftEarValues);
 
     let diagnosisText = '';
 
-    if (averageRightEar > 60 && averageLeftEar > 60) {
+    if (avgRight > 60 && avgLeft > 60) {
       diagnosisText = 'Severe hearing loss in both ears. Hearing aids or further evaluation recommended.';
-    } else if (averageRightEar > 60) {
+    } else if (avgRight > 60) {
       diagnosisText = 'Severe hearing loss in the right ear. Further evaluation recommended.';
-    } else if (averageLeftEar > 60) {
+    } else if (avgLeft > 60) {
       diagnosisText = 'Severe hearing loss in the left ear. Further evaluation recommended.';
-    } else if (averageRightEar > 40 || averageLeftEar > 40) {
+    } else if (avgRight > 40 || avgLeft > 40) {
       diagnosisText = 'Moderate hearing loss. Preventive measures are advised.';
     } else {
       diagnosisText = 'Normal hearing levels. Regular check-ups recommended.';
     }
 
     setDiagnosis(diagnosisText);
-
-    // Save the diagnosis to the database
-    await handleSave(diagnosisText);
   };
 
-  const handleSave = async (diagnosisText) => {
-    console.log('handleSave function called');
-
-    const { data: { user }, error } = await supabase.auth.getUser();
-
-    if (error) {
-      console.error('Error getting user:', error.message);
-      alert('Error getting user.');
+  const handleAssignResults = async () => {
+    if (!selectedPatient) {
+      alert('Please select a patient to assign the results.');
       return;
     }
 
-    if (!user) {
-      console.error('No user is logged in.');
-      alert('Please log in to save results.');
+    if (!diagnosis) {
+      alert('Please generate a diagnosis before assigning the results.');
       return;
     }
 
-    // Prepare the results to save in the database
-    const results = data.labels.map((label, index) => ({
-      user_id: user.id, // Reference to the authenticated user's ID
-      frequency: label, // Use the frequency as the label
-      right_ear_value: data.rightEarValues[index],
-      left_ear_value: data.leftEarValues[index],
-      diagnosis: diagnosisText, // Use the diagnosis passed as a parameter
-      created_at: new Date().toISOString(), // Set the creation date
+    setLoading(true);
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData?.user) {
+      alert('Failed to get current user.');
+      setLoading(false);
+      return;
+    }
+
+    const results = (data.labels || []).map((label, index) => ({
+      user_id: userData.user.id,
+      patient_id: selectedPatient.id,
+      frequency: label,
+      right_ear_value: data.rightEarValues?.[index] ?? 0,
+      left_ear_value: data.leftEarValues?.[index] ?? 0,
+      diagnosis,
+      created_at: new Date().toISOString(),
     }));
 
     try {
       const { error } = await supabase.from('audiometry_results').insert(results);
 
       if (error) {
-        console.error('Error saving results:', error.message);
-        alert('Error saving results: ' + error.message);
+        console.error('Error assigning results:', error.message);
+        alert('Error assigning results: ' + error.message);
       } else {
-        console.log('Results saved successfully');
-        alert('Results saved successfully!');
+        alert('Results assigned successfully!');
+        navigate(`/patient-profile/${selectedPatient.id}`);
       }
     } catch (error) {
-      console.error('Error inserting data:', error);
-      alert('Unexpected error occurred while saving results.');
+      console.error('Unexpected error while assigning results:', error);
+      alert('Unexpected error occurred while assigning results.');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleSearchPatient = () => {
+    navigate('/search-patient', { state: { fromResults: true } });
+  };
+
   return (
-    <div className="subscription-container">
+    <div className="results-container">
       <h2>Results</h2>
-      <button onClick={generateDiagnosis}>Generate Diagnosis</button>
-      <button onClick={() => navigate('/')}>Back</button>
+
+      <button onClick={generateDiagnosis} style={{ color: 'white', marginLeft: '0rem', marginTop: '1rem' }}>Generate Diagnosis</button>
+
       {diagnosis && (
         <div className="diagnosis">
-          <h3>Diagnosis Summary</h3>
+          <h4>Diagnosis Summary</h4>
           <p>{diagnosis}</p>
         </div>
       )}
+
+      <div>
+        <h3>Select a Patient</h3>
+        <button onClick={handleSearchPatient} style={{ color: 'white', marginLeft: '0rem', marginTop: '1rem' }}>Search Patient</button>
+        {selectedPatient && <p>Selected Patient: <strong>{selectedPatient.name}</strong></p>}
+      </div>
+
       <button
-        onClick={() => {
-          if (!diagnosis) {
-            alert('Please generate a diagnosis before saving.');
-            return;
-          }
-          handleSave(diagnosis);
-        }}
+        onClick={handleAssignResults}
+        disabled={loading || !selectedPatient || !diagnosis}
       >
-        Save Results
+        {loading ? 'Assigning...' : 'Assign Results'}
       </button>
+
+      <button onClick={() => navigate('/')} style={{ color: 'white', marginLeft: '0rem', marginTop: '1rem', marginBlock: '0rem'}}>Back</button>
     </div>
   );
 };

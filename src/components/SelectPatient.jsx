@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { useNavigate } from 'react-router-dom';
 
-const History = () => {
+const SelectPatient = ({ user }) => {
   const [patients, setPatients] = useState([]);
   const navigate = useNavigate();
 
@@ -10,7 +10,8 @@ const History = () => {
     const fetchPatients = async () => {
       const { data, error } = await supabase
         .from('patients')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Error fetching patients:', error.message);
@@ -20,26 +21,27 @@ const History = () => {
     };
 
     fetchPatients();
-  }, []);
+  }, [user]);
+
+  const handleSelect = (patient) => {
+    // Navega a la página de resultados con el paciente seleccionado
+    navigate('/results', { state: { patient } });
+  };
 
   return (
     <div>
-      <h2>Patient List</h2>
-      {patients.length > 0 ? (
-        <ul>
-          {patients.map((patient) => (
-            <li key={patient.id}>
-              <button onClick={() => navigate(`/patient-profile/${patient.id}`)} style={{ color: 'white', marginLeft: '0rem', marginTop: '1rem' }}>
-                {patient.name} - {patient.dni}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No patients found.</p>
-      )}
+      <h2>Select a Patient</h2>
+      <ul>
+        {patients.map((p) => (
+          <li key={p.id}>
+            <button onClick={() => handleSelect(p)}>
+              {p.name} - {p.dni}
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default History;
+export default SelectPatient;

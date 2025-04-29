@@ -1,6 +1,15 @@
 import React from 'react';
 
 const AudiometryTable = ({ data, onDataChange }) => {
+  if (
+    !data ||
+    !Array.isArray(data.labels) ||
+    !Array.isArray(data.rightEarValues) ||
+    !Array.isArray(data.leftEarValues)
+  ) {
+    return <p>Error: Audiometry data is incomplete or malformed.</p>;
+  }
+
   const handleInputChange = (index, field, value) => {
     const updatedValues = [...data[field]];
     updatedValues[index] = parseInt(value, 10) || 0;
@@ -10,7 +19,7 @@ const AudiometryTable = ({ data, onDataChange }) => {
       [field]: updatedValues,
     };
 
-    onDataChange(updatedData); 
+    if (onDataChange) onDataChange(updatedData);
   };
 
   return (
@@ -29,14 +38,14 @@ const AudiometryTable = ({ data, onDataChange }) => {
             <td>
               <input
                 type="number"
-                value={data.rightEarValues[index]}
+                value={data.rightEarValues[index] ?? ''}
                 onChange={(e) => handleInputChange(index, 'rightEarValues', e.target.value)}
               />
             </td>
             <td>
               <input
                 type="number"
-                value={data.leftEarValues[index]}
+                value={data.leftEarValues[index] ?? ''}
                 onChange={(e) => handleInputChange(index, 'leftEarValues', e.target.value)}
               />
             </td>

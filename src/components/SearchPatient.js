@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SearchPatient = ({ user }) => {
   const [search, setSearch] = useState('');
   const [patients, setPatients] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -13,12 +14,21 @@ const SearchPatient = ({ user }) => {
       .from('patients')
       .select('*')
       .ilike('dni', `%${search}%`)
-      .eq('user_id', user.id); // ← Filtrar por técnico
+      .eq('user_id', user.id); // Filtrar por técnico
 
     if (error) {
       console.error('Error:', error.message);
     } else {
       setPatients(data);
+    }
+  };
+
+  const handleSelectPatient = (patient) => {
+    // Redirigir al componente principal del gráfico con el paciente seleccionado
+    if (location.state?.fromChart) {
+      navigate('/main-chart', { state: { patient } });
+    } else {
+      navigate(`/patient-profile/${patient.id}`);
     }
   };
 
@@ -28,7 +38,7 @@ const SearchPatient = ({ user }) => {
       <form onSubmit={handleSearch}>
         <input
           type="text"
-          placeholder="Search by Name or DNI"
+          placeholder="Search by DNI"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -39,7 +49,10 @@ const SearchPatient = ({ user }) => {
         <ul>
           {patients.map((p) => (
             <li key={p.id}>
-              <button onClick={() => navigate(`/patient-profile/${p.id}`)}>
+              <button
+                onClick={() => handleSelectPatient(p)}
+                style={{ color: 'white', marginLeft: '0rem', marginTop: '1rem' }}
+              >
                 {p.name} - {p.dni}
               </button>
             </li>

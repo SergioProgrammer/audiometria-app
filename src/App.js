@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import AudiometryChart from './components/AudiometryChart';
 import AudiometryTable from './components/AudiometryTable';
 import SubscriptionControl from './components/SubscriptionControl';
-import Perfil from './components/Perfil';
 import Results from './components/Results';
 import { supabase } from './supabase'; 
 import History from './components/History';  
@@ -204,14 +203,6 @@ const App = () => {
     }
   />
   <Route
-    path="/perfil"
-    element={
-      <ProtectedRoute user={user}>
-        <Perfil />
-      </ProtectedRoute>
-    }
-  />
-  <Route
     path="/history"
     element={
       <ProtectedRoute user={user}>
@@ -271,7 +262,6 @@ const Dashboard = ({ user, data, setData, onLogout }) => {
         <p>{user.email}</p>
         {user.user_metadata?.subscription && <p>Subscription: {user.user_metadata.subscription}€/month</p>}
         <button onClick={() => navigate('/subscriptions')}>Subscription Settings</button>
-        <button onClick={() => navigate('/perfil')}>Profile Control</button>
         <button onClick={() => navigate('/results')}>Results</button>
         <button onClick={() => navigate('/history')}>History</button>  
         <button onClick={() => navigate('/add-patient')}>Add New Patient</button>
