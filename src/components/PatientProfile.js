@@ -119,6 +119,46 @@ const PatientProfile = () => {
     }
   };
 
+  const handleGenerateDiagnosis = () => {
+    if (!resultsByDate || Object.keys(resultsByDate).length === 0) {
+      alert('No audiometry results found for this patient.');
+      return;
+    }
+  
+    // Obtener los resultados más recientes
+    const latestDate = Object.keys(resultsByDate)[0];
+    const latestResults = resultsByDate[latestDate];
+  
+    // Calcular el promedio de las frecuencias clave para cada oído
+    const calculateAverage = (values) => {
+      const total = values.reduce((sum, value) => sum + value, 0);
+      return total / values.length;
+    };
+  
+    const rightEarAverage = calculateAverage(latestResults.rightEarValues);
+    const leftEarAverage = calculateAverage(latestResults.leftEarValues);
+  
+    // Clasificar el nivel de pérdida auditiva
+    const classifyHearingLoss = (average) => {
+      if (average <= 25) return 'Normal';
+      if (average <= 40) return 'Mild Hearing Loss';
+      if (average <= 55) return 'Moderate Hearing Loss';
+      if (average <= 70) return 'Moderately Severe Hearing Loss';
+      if (average <= 90) return 'Severe Hearing Loss';
+      return 'Profound Hearing Loss';
+    };
+  
+    const rightEarDiagnosis = classifyHearingLoss(rightEarAverage);
+    const leftEarDiagnosis = classifyHearingLoss(leftEarAverage);
+  
+    // Mostrar el diagnóstico
+    alert(
+      `Diagnosis:\n` +
+      `Right Ear: ${rightEarDiagnosis} (Average: ${rightEarAverage.toFixed(2)} dB)\n` +
+      `Left Ear: ${leftEarDiagnosis} (Average: ${leftEarAverage.toFixed(2)} dB)`
+    );
+  };
+
   return (
     <div>
       {patient && (
@@ -138,6 +178,9 @@ const PatientProfile = () => {
               <button onClick={() => setEditing(true)}>Edit Info</button>
               <button onClick={handleDeletePatient} style={{ color: 'white', marginTop: '1rem' }}>
                 Delete Patient
+              </button>
+              <button onClick={handleGenerateDiagnosis} style={{ backgroundColor: '#0077b6', color: 'white', marginTop: '1rem' }}>
+                Generate Diagnosis
               </button>
             </div>
           )}

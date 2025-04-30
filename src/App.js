@@ -262,7 +262,6 @@ const Dashboard = ({ user, data, setData, onLogout }) => {
         <p>{user.email}</p>
         {user.user_metadata?.subscription && <p>Subscription: {user.user_metadata.subscription}€/month</p>}
         <button onClick={() => navigate('/subscriptions')}>Subscription Settings</button>
-        <button onClick={() => navigate('/results')}>Results</button>
         <button onClick={() => navigate('/add-patient')}>Add New Patient</button>
         <button onClick={() => navigate('/search-patient')}>Search Patients</button>
         <button onClick={onLogout}>Logout</button>
